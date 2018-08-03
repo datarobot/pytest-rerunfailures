@@ -24,6 +24,7 @@ def works_with_current_xdist():
     -------
     result : bool || None
     """
+    return False
     try:
         d = pkg_resources.get_distribution('pytest-xdist')
         return d.parsed_version >= pkg_resources.parse_version('1.20')
