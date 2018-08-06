@@ -1,5 +1,4 @@
 import json
-import pkg_resources
 import time
 import warnings
 
@@ -20,16 +19,14 @@ def works_with_current_xdist():
     rerunning the test. Thus we must skip logging of intermediate results under
     these circumstances, otherwise no test is rerun.
 
+    With pytest-xdist 1.22.5 - there is still issue with logreport,
+    so we disabled it permanently.
+
     Returns
     -------
     result : bool || None
     """
     return False
-    try:
-        d = pkg_resources.get_distribution('pytest-xdist')
-        return d.parsed_version >= pkg_resources.parse_version('1.20')
-    except pkg_resources.DistributionNotFound:
-        return None
 
 
 def check_options(config):
