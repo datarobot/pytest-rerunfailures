@@ -1,7 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import copy
 import json
 import sys
@@ -283,7 +279,7 @@ class RerunLogXML(LogXML):
         super(RerunLogXML, self).pytest_runtest_logreport(report)
 
 
-class RerunStats(object):
+class RerunStats:
     """Represents rerun stats"""
 
     def __init__(self):
@@ -385,7 +381,7 @@ class RerunStats(object):
         del self._tracked_nodes[nodeid]
 
 
-class XdistRerunsAggregator(object):
+class XdistRerunsAggregator:
     """Simple rerun stats aggregator aimed to be attached to xdist master process"""
 
     def __init__(self):
@@ -438,7 +434,7 @@ class XdistRerunsAggregator(object):
             return "rerun", "R", ("RERUN", {"yellow": True})
 
 
-class RerunPlugin(object):
+class RerunPlugin:
     """Pytest plugin implements rerun failed functionality"""
 
     def __init__(self, config):
