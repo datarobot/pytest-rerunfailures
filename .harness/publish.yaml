@@ -1,0 +1,19 @@
+pipeline:
+  name: Publish
+  identifier: publish
+  projectIdentifier: pytestRerunFailures
+  orgIdentifier: CIIT
+  tags: {}
+  properties:
+    ci:
+      codebase:
+        connectorRef: account.svc_harness_git1
+        repoName: pytest-rerunfailures
+        build: <+input>
+  stages:
+    - stage:
+        name: Publish
+        identifier: Publish
+        template:
+          templateRef: account.setup_py_artifactory
+          versionLabel: 0.1.0

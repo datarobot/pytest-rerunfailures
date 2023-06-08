@@ -45,24 +45,21 @@ def test_test_passing_2(session_fixture_3):
 
 
 def make_simple_pytest_suite(testdir, total_failures=1, expected_reruns=0, has_failure=False):
-    failures = ''
+    failures = ""
     for i in range(total_failures):
         failures += FAILURE.format(id=i, ind=expected_reruns + int(has_failure))
-        failures += '\n'
-    testdir.makepyfile(
-        TESTS.format(TESTS.format(failures))
-    )
+        failures += "\n"
+    testdir.makepyfile(TESTS.format(TESTS.format(failures)))
 
 
-def assert_outcomes(result, passed=1, skipped=0, failed=0, error=0, xfailed=0,
-                    xpassed=0, rerun=0):
+def assert_outcomes(result, passed=1, skipped=0, failed=0, error=0, xfailed=0, xpassed=0, rerun=0):
     outcomes = result.parseoutcomes()
-    assert outcomes.get('passed', 0) == passed
-    assert outcomes.get('skipped', 0) == skipped
-    assert outcomes.get('failed', 0) == failed
-    assert outcomes.get('xfailed', 0) == xfailed
-    assert outcomes.get('xpassed', 0) == xpassed
-    assert outcomes.get('rerun', 0) == rerun
+    assert outcomes.get("passed", 0) == passed
+    assert outcomes.get("skipped", 0) == skipped
+    assert outcomes.get("failed", 0) == failed
+    assert outcomes.get("xfailed", 0) == xfailed
+    assert outcomes.get("xpassed", 0) == xpassed
+    assert outcomes.get("rerun", 0) == rerun
 
 
 def temporary_failure(count=1):
@@ -71,4 +68,6 @@ def temporary_failure(count=1):
             count = path.read() or 1
             if int(count) <= {0}:
                 path.write(int(count) + 1)
-                raise Exception('Failure: {{0}}'.format(count))""".format(count)
+                raise Exception('Failure: {{0}}'.format(count))""".format(
+        count
+    )
