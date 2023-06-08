@@ -10,9 +10,6 @@ re-runs tests to eliminate intermittent failures.
 .. image:: https://img.shields.io/pypi/v/pytest-rerunfailures.svg
    :target: https://pypi.python.org/pypi/pytest-rerunfailures/
    :alt: PyPI
-.. image:: https://github.com/pytest-dev/pytest-rerunfailures/workflows/Test/badge.svg
-   :target: https://github.com/pytest-dev/pytest-rerunfailures/actions
-   :alt: GitHub Actions
 
 Requirements
 ------------
@@ -30,6 +27,13 @@ prerequisites:
 This package is currently tested against the last 5 minor pytest releases. In
 case you work with an older version of pytest you should consider updating or
 use one of the earlier versions of this package.
+
+
+Releasing
+---------
+
+* Update [CHANGES.rst](CHANGES.rst) to make sure changelog is updated for the new version.
+* Tag version with a semver like `v1.2.3` and jarvis will package and upload it to artifactory
 
 Installation
 ------------

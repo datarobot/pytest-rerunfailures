@@ -1,4 +1,5 @@
 import hashlib
+import json
 import os
 import platform
 import re
@@ -67,9 +68,7 @@ RERUNS_DELAY_DESC = "add time (seconds) delay between reruns."
 
 # command line options
 def pytest_addoption(parser):
-    group = parser.getgroup(
-        "rerunfailures", "re-run failing tests to eliminate flaky failures"
-    )
+    group = parser.getgroup("rerunfailures", "re-run failing tests to eliminate flaky failures")
     group._addoption(
         "--only-rerun",
         action="append",
@@ -103,6 +102,30 @@ def pytest_addoption(parser):
         help="If passed, only rerun errors other than matching the "
         "regex provided. Pass this flag multiple times to accumulate a list "
         "of regexes to match",
+    )
+    group._addoption(
+        '--reruns-artifact-path',
+        action='store',
+        dest='reruns_artifact_path',
+        type=str,
+        default='',
+        help='provide path to export reruns artifact.',
+    )
+    group._addoption(
+        '--xdist-worker-reruns-artifact',
+        action='store_true',
+        dest='xdist_worker_reruns_artifact',
+        default=False,
+        help='save artifact for each xdist worker separetly for details',
+    )
+    group._addoption(
+        '--max-tests-rerun',
+        action='store',
+        dest='max_tests_rerun',
+        type=int,
+        default=None,
+        help='max amount of failures at which reruns would be executed. '
+        'If xdist used - max amount of failures per worker',
     )
     arg_type = "string" if PYTEST_GTE_62 else None
     parser.addini("reruns", RERUNS_DESC, type=arg_type)
@@ -203,9 +226,7 @@ def get_reruns_delay(item):
 
     if delay < 0:
         delay = 0
-        warnings.warn(
-            "Delay time between re-runs cannot be < 0. Using default value: 0"
-        )
+        warnings.warn("Delay time between re-runs cannot be < 0. Using default value: 0")
 
     return delay
 
@@ -215,9 +236,7 @@ def get_reruns_condition(item):
 
     condition = True
     if rerun_marker is not None and "condition" in rerun_marker.kwargs:
-        condition = evaluate_condition(
-            item, rerun_marker, rerun_marker.kwargs["condition"]
-        )
+        condition = evaluate_condition(item, rerun_marker, rerun_marker.kwargs["condition"])
 
     return condition
 
@@ -310,7 +329,6 @@ def _should_hard_fail_on_error(session_config, report):
     rerun_except_errors = session_config.option.rerun_except
 
     if not rerun_errors and not rerun_except_errors:
-
         return False
 
     if rerun_errors:
@@ -325,23 +343,26 @@ def _should_hard_fail_on_error(session_config, report):
     if rerun_except_errors:
         for rerun_regex in rerun_except_errors:
             if not re.search(rerun_regex, report.longrepr.reprcrash.message):
-
                 return False
 
     return True
+
+
+def _should_not_exceed_max_tests_reruns(item):
+    should_not_exceed_max_tests_reruns = False
+
+    if item.config.option.max_tests_rerun is not None:
+        should_not_exceed_max_tests_reruns = item.session.testsfailed >= item.config.option.max_tests_rerun
+
+    return should_not_exceed_max_tests_reruns
 
 
 def _should_not_rerun(item, report, reruns):
     xfail = hasattr(report, "wasxfail")
     is_terminal_error = _should_hard_fail_on_error(item.session.config, report)
     condition = get_reruns_condition(item)
-    return (
-        item.execution_count > reruns
-        or not report.failed
-        or xfail
-        or is_terminal_error
-        or not condition
-    )
+    should_not_exceed_max_tests_reruns = _should_not_exceed_max_tests_reruns(item)
+    return item.execution_count > reruns or not report.failed or xfail or is_terminal_error or not condition or should_not_exceed_max_tests_reruns
 
 
 def is_master(config):
@@ -434,7 +455,7 @@ class SocketDB(StatusDB):
     def __init__(self):
         super().__init__()
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.setblocking(1)
+        self.sock.setblocking(True)
 
     def _sock_recv(self, conn) -> str:
         buf = b""
@@ -552,6 +573,7 @@ def pytest_runtest_protocol(item, nextitem):
     Note: when teardown fails, two reports are generated for the case, one for
     the test case and the other for the teardown error.
     """
+    rerun_stats = RerunStats()
     reruns = get_reruns_count(item)
     if reruns is None:
         # global setting is not specified, and this test is not marked with
@@ -584,6 +606,7 @@ def pytest_runtest_protocol(item, nextitem):
                 item.ihook.pytest_runtest_logreport(report=report)
             else:
                 # failure detected and reruns not exhausted, since i < reruns
+                rerun_stats.add_failure(*reports)
                 report.outcome = "rerun"
                 time.sleep(delay)
 
@@ -591,7 +614,7 @@ def pytest_runtest_protocol(item, nextitem):
                     # will rerun test, log intermediate result
                     item.ihook.pytest_runtest_logreport(report=report)
 
-                # cleanin item's cashed results from any level of setups
+                # cleaning item's cashed results from any level of setups
                 _remove_cached_results_from_failed_fixtures(item)
                 _remove_failed_setup_state_from_session(item)
 
@@ -600,8 +623,19 @@ def pytest_runtest_protocol(item, nextitem):
             need_to_run = False
 
         item.ihook.pytest_runtest_logfinish(nodeid=item.nodeid, location=item.location)
+        _save_reruns_artifact(item.session)
 
     return True
+
+
+def _save_reruns_artifact(session):
+    """Save reruns artifact as json if path to artifact provided."""
+    artifact_path = session.config.option.reruns_artifact_path
+    if not artifact_path:
+        return
+
+    with open(artifact_path, 'w') as artifact:
+        json.dump(self.rerun_stats, artifact)
 
 
 def pytest_report_teststatus(report):
@@ -663,3 +697,115 @@ if HAS_RESULTLOG:
                 longrepr = str(report.longrepr)
 
             self.log_outcome(report, code, longrepr)
+
+
+class RerunStats:
+    """Represents rerun stats"""
+
+    def __init__(self):
+        self._tracked_nodes = {}
+        self.rerun_stats = {
+            'rerun_tests': [],
+            'total_failed': 0,
+            'total_reruns': 0,
+            'total_resolved_by_reruns': 0
+        }
+
+    def _failure_entry(self, nodeid):
+        """
+        Add failure entry
+        We assume that failure for test could appear once per run which mean that
+        tests are executed without repetition in main run
+        """
+        if nodeid not in self._tracked_nodes:
+            self._tracked_nodes[nodeid] = self._stat_entry(nodeid)
+            self.rerun_stats['total_failed'] += 1
+        return self._tracked_nodes[nodeid]
+
+    def _rerun_entry(self, nodeid):
+        """
+        Add rerun entry
+        Rerun could be added several times
+        """
+        if nodeid not in self._tracked_nodes:
+            self._tracked_nodes[nodeid] = self._stat_entry(nodeid)
+        self.rerun_stats['total_reruns'] += 1
+        return self._tracked_nodes[nodeid]
+
+    def _stat_entry(self, nodeid):
+        """Default entry structure"""
+        return {
+            'nodeid': nodeid,
+            'status': 'failed',
+            'original_trace': self._test_traces(),
+            'rerun_trace': self._test_traces()
+        }
+
+    def _test_traces(self):
+        """Default traces structures"""
+        return {
+            'setup': {
+                'caplog': '',
+                'capstderr': '',
+                'capstdout': '',
+                'text_repr': ''
+            },
+            'call': {
+                'caplog': '',
+                'capstderr': '',
+                'capstdout': '',
+                'text_repr': ''
+            },
+            'teardown': {
+                'caplog': '',
+                'capstderr': '',
+                'capstdout': '',
+                'text_repr': ''
+            }
+        }
+
+    def add_failure(self, *reports):
+        """
+        Add failure appeared during run
+
+        Parameters
+        ----------
+        reports : list[_pytest.runner.TestReport]
+        """
+        if not reports:
+            return
+        failure = self._failure_entry(reports[0].nodeid)
+        for report in reports:
+            failure['original_trace'][report.when]['caplog'] = report.caplog
+            failure['original_trace'][report.when]['capstderr'] = report.capstderr
+            failure['original_trace'][report.when]['capstdout'] = report.capstdout
+            failure['original_trace'][report.when]['text_repr'] = report.longreprtext
+
+    def add_rerun(self, success, *reports):
+        """
+        Add failure appeared during run
+
+        Parameters
+        ----------
+        success : bool
+        reports : list[_pytest.runner.TestReport]
+        """
+        if not reports:
+            return
+        rerun = self._rerun_entry(reports[0].nodeid)
+        self.rerun_stats['total_resolved_by_reruns'] += int(success)
+        rerun['status'] = 'flake' if success else 'failed'
+        for report in reports:
+            rerun['rerun_trace'][report.when]['caplog'] = report.caplog
+            rerun['rerun_trace'][report.when]['capstderr'] = report.capstderr
+            rerun['rerun_trace'][report.when]['capstdout'] = report.capstdout
+            rerun['rerun_trace'][report.when]['text_repr'] = report.longreprtext
+
+    def dump_artifact(self, artifact_path):
+        self.rerun_stats['rerun_tests'] = list(self._tracked_nodes.values())
+        with open(artifact_path, 'w') as artifact:
+            json.dump(self.rerun_stats, artifact)
+
+    def remove_node(self, nodeid):
+        node = self._tracked_nodes[nodeid]
+        del self._tracked_nodes[nodeid]

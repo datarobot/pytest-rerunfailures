@@ -1,10 +1,11 @@
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import json
 
-import pytest
-
-from conftest import make_simple_pytest_suite, assert_outcomes, temporary_failure
-
+from conftest import assert_outcomes
+from conftest import make_simple_pytest_suite
+from conftest import temporary_failure
 
 pytest_plugins = ['pytester']
 
@@ -13,26 +14,29 @@ def test_reruns_stats_all_tests_passed(testdir):
     artifact_path = testdir.tmpdir.strpath + '/artifact.json'
     make_simple_pytest_suite(testdir, expected_reruns=0, has_failure=False)
     result = testdir.runpytest(
-        '--reruns', '1', '-r', 'R',
-        '--reruns-artifact-path', artifact_path,
+        '--reruns',
+        '1',
+        '-r',
+        'R',
+        '--reruns-artifact-path',
+        artifact_path,
     )
     assert_outcomes(result, passed=3, rerun=0)
     with open(artifact_path) as artifact:
         artifact_data = json.load(artifact)
-        assert artifact_data == {
-            'total_reruns': 0,
-            'total_failed': 0,
-            'total_resolved_by_reruns': 0,
-            'rerun_tests': []
-        }
+        assert artifact_data == {'total_reruns': 0, 'total_failed': 0, 'total_resolved_by_reruns': 0, 'rerun_tests': []}
 
 
 def test_reruns_stats_all_tests_resolved(testdir):
     artifact_path = testdir.tmpdir.strpath + '/artifact.json'
     make_simple_pytest_suite(testdir, expected_reruns=1, has_failure=False)
     result = testdir.runpytest(
-        '--reruns', '1', '-r', 'R',
-        '--reruns-artifact-path', artifact_path,
+        '--reruns',
+        '1',
+        '-r',
+        'R',
+        '--reruns-artifact-path',
+        artifact_path,
     )
     assert_outcomes(result, passed=3, rerun=1)
     with open(artifact_path) as artifact:
@@ -50,20 +54,20 @@ def test_reruns_stats_all_tests_resolved(testdir):
                             'caplog': '',
                             'capstderr': '',
                             'capstdout': 'session_fixture_2 setup\nsession_fixture_1 setup\nsession_fixture_2 setup\nsession_fixture_2 teardown\nsession_fixture_1 teardown\n',
-                            'text_repr': ''
+                            'text_repr': '',
                         },
                         'setup': {
                             'caplog': '',
                             'capstderr': '',
                             'capstdout': 'session_fixture_2 setup\nsession_fixture_1 setup\nsession_fixture_2 setup\n',
-                            'text_repr': ''
+                            'text_repr': '',
                         },
                         'call': {
                             'caplog': '',
                             'capstderr': '',
                             'capstdout': 'session_fixture_2 setup\nsession_fixture_1 setup\nsession_fixture_2 setup\n',
-                            'text_repr': ''
-                        }
+                            'text_repr': '',
+                        },
                     },
                     'original_trace': {
                         'call': {
@@ -76,17 +80,17 @@ def test_reruns_stats_all_tests_resolved(testdir):
                             'caplog': '',
                             'capstderr': '',
                             'capstdout': 'session_fixture_2 setup\n',
-                            'text_repr': ''
+                            'text_repr': '',
                         },
                         'teardown': {
                             'caplog': '',
                             'capstderr': '',
                             'capstdout': 'session_fixture_2 setup\n',
-                            'text_repr': ''
-                        }
-                    }
+                            'text_repr': '',
+                        },
+                    },
                 },
-            ]
+            ],
         }
 
 
@@ -94,8 +98,12 @@ def test_reruns_stats_all_tests_failed(testdir):
     artifact_path = testdir.tmpdir.strpath + '/artifact.json'
     make_simple_pytest_suite(testdir, expected_reruns=1, has_failure=True)
     result = testdir.runpytest(
-        '--reruns', '1', '-r', 'R',
-        '--reruns-artifact-path', artifact_path,
+        '--reruns',
+        '1',
+        '-r',
+        'R',
+        '--reruns-artifact-path',
+        artifact_path,
     )
     assert_outcomes(result, passed=2, rerun=1, failed=1)
     with open(artifact_path) as artifact:
@@ -113,20 +121,20 @@ def test_reruns_stats_all_tests_failed(testdir):
                             'caplog': '',
                             'capstderr': '',
                             'capstdout': 'session_fixture_2 setup\nsession_fixture_1 setup\nsession_fixture_2 setup\nsession_fixture_2 teardown\nsession_fixture_1 teardown\n',
-                            'text_repr': ''
+                            'text_repr': '',
                         },
                         'setup': {
                             'caplog': '',
                             'capstderr': '',
                             'capstdout': 'session_fixture_2 setup\nsession_fixture_1 setup\nsession_fixture_2 setup\n',
-                            'text_repr': ''
+                            'text_repr': '',
                         },
                         'call': {
                             'caplog': '',
                             'capstderr': '',
                             'capstdout': 'session_fixture_2 setup\nsession_fixture_1 setup\nsession_fixture_2 setup\n',
-                            'text_repr': 'session_fixture_2 = None\n\n    def test_test_failing_0(session_fixture_2):\n        global number_0\n        number_0 += 1\n>       assert number_0 == 1 + 2\nE       assert 2 == (1 + 2)\n\ntest_reruns_stats_all_tests_failed.py:60: AssertionError'
-                        }
+                            'text_repr': 'session_fixture_2 = None\n\n    def test_test_failing_0(session_fixture_2):\n        global number_0\n        number_0 += 1\n>       assert number_0 == 1 + 2\nE       assert 2 == (1 + 2)\n\ntest_reruns_stats_all_tests_failed.py:60: AssertionError',
+                        },
                     },
                     'original_trace': {
                         'call': {
@@ -139,17 +147,17 @@ def test_reruns_stats_all_tests_failed(testdir):
                             'caplog': '',
                             'capstderr': '',
                             'capstdout': 'session_fixture_2 setup\n',
-                            'text_repr': ''
+                            'text_repr': '',
                         },
                         'teardown': {
                             'caplog': '',
                             'capstderr': '',
                             'capstdout': 'session_fixture_2 setup\n',
-                            'text_repr': ''
-                        }
-                    }
+                            'text_repr': '',
+                        },
+                    },
                 },
-            ]
+            ],
         }
 
 
@@ -157,27 +165,24 @@ def test_reruns_stats_max_reruns_reached(testdir):
     artifact_path = testdir.tmpdir.strpath + '/artifact.json'
     make_simple_pytest_suite(testdir, total_failures=2, expected_reruns=1, has_failure=True)
     result = testdir.runpytest(
-        '--reruns', '1', '-r', 'R',
-        '--reruns-artifact-path', artifact_path,
-        '--max-tests-rerun', '1'
+        '--reruns', '1', '-r', 'R', '--reruns-artifact-path', artifact_path, '--max-tests-rerun', '1'
     )
     assert_outcomes(result, passed=2, rerun=0, failed=2)
     with open(artifact_path) as artifact:
         artifact_data = json.load(artifact)
-        assert artifact_data == {
-            'total_reruns': 0,
-            'total_failed': 0,
-            'total_resolved_by_reruns': 0,
-            'rerun_tests': []
-        }
+        assert artifact_data == {'total_reruns': 0, 'total_failed': 0, 'total_resolved_by_reruns': 0, 'rerun_tests': []}
 
 
 def test_reruns_stats_2_tests_resolved(testdir):
     artifact_path = testdir.tmpdir.strpath + '/artifact.json'
     make_simple_pytest_suite(testdir, total_failures=2, expected_reruns=1, has_failure=False)
     result = testdir.runpytest(
-        '--reruns', '1', '-r', 'R',
-        '--reruns-artifact-path', artifact_path,
+        '--reruns',
+        '1',
+        '-r',
+        'R',
+        '--reruns-artifact-path',
+        artifact_path,
     )
     assert_outcomes(result, passed=4, rerun=2, failed=0)
     with open(artifact_path) as artifact:
@@ -194,8 +199,12 @@ def test_reruns_stats_2_tests_failed(testdir):
     artifact_path = testdir.tmpdir.strpath + '/artifact.json'
     make_simple_pytest_suite(testdir, total_failures=2, expected_reruns=1, has_failure=True)
     result = testdir.runpytest(
-        '--reruns', '1', '-r', 'R',
-        '--reruns-artifact-path', artifact_path,
+        '--reruns',
+        '1',
+        '-r',
+        'R',
+        '--reruns-artifact-path',
+        artifact_path,
     )
     assert_outcomes(result, passed=2, rerun=2, failed=2)
     with open(artifact_path) as artifact:
@@ -211,12 +220,20 @@ def test_reruns_stats_2_tests_failed(testdir):
 def test_reruns_stats_after_temporary_setup_resolved(testdir):
     artifact_path = testdir.tmpdir.strpath + '/artifact.json'
     testdir.makepyfile('def test_pass(): pass')
-    testdir.makeconftest("""
+    testdir.makeconftest(
+        """
         def pytest_runtest_setup(item):
-            {0}""".format(temporary_failure()))
+            {0}""".format(
+            temporary_failure()
+        )
+    )
     result = testdir.runpytest(
-        '--reruns', '1', '-r', 'R',
-        '--reruns-artifact-path', artifact_path,
+        '--reruns',
+        '1',
+        '-r',
+        'R',
+        '--reruns-artifact-path',
+        artifact_path,
     )
     assert_outcomes(result, passed=1, rerun=1)
     with open(artifact_path) as artifact:
@@ -229,15 +246,24 @@ def test_reruns_stats_after_temporary_setup_resolved(testdir):
         assert 'rerun_trace' in artifact_data['rerun_tests'][0]
         assert 'original_trace' in artifact_data['rerun_tests'][0]
 
+
 def test_reruns_stats_after_temporary_setup_failure(testdir):
     artifact_path = testdir.tmpdir.strpath + '/artifact.json'
     testdir.makepyfile('def test_pass(): pass')
-    testdir.makeconftest("""
+    testdir.makeconftest(
+        """
         def pytest_runtest_setup(item):
-            {0}""".format(temporary_failure(2)))
+            {0}""".format(
+            temporary_failure(2)
+        )
+    )
     result = testdir.runpytest(
-        '--reruns', '1', '-r', 'R',
-        '--reruns-artifact-path', artifact_path,
+        '--reruns',
+        '1',
+        '-r',
+        'R',
+        '--reruns-artifact-path',
+        artifact_path,
     )
     assert_outcomes(result, passed=0, error=1, rerun=1)
     with open(artifact_path) as artifact:

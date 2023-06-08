@@ -7,7 +7,6 @@ from packaging.version import parse as parse_version
 
 from pytest_rerunfailures import HAS_PYTEST_HANDLECRASHITEM
 
-
 pytest_plugins = "pytester"
 
 PYTEST_GTE_60 = parse_version(pytest.__version__) >= parse_version("6.0")
@@ -39,8 +38,7 @@ def temporary_crash(count=1):
 def check_outcome_field(outcomes, field_name, expected_value):
     field_value = outcomes.get(field_name, 0)
     assert field_value == expected_value, (
-        f"outcomes.{field_name} has unexpected value. "
-        f"Expected '{expected_value}' but got '{field_value}'"
+        f"outcomes.{field_name} has unexpected value. " f"Expected '{expected_value}' but got '{field_value}'"
     )
 
 
@@ -323,10 +321,7 @@ def test_reruns_with_delay(testdir, delay_time):
     result = testdir.runpytest("--reruns", "3", "--reruns-delay", str(delay_time))
 
     if delay_time < 0:
-        result.stdout.fnmatch_lines(
-            "*UserWarning: Delay time between re-runs cannot be < 0. "
-            "Using default value: 0"
-        )
+        result.stdout.fnmatch_lines("*UserWarning: Delay time between re-runs cannot be < 0. " "Using default value: 0")
         delay_time = 0
 
     time.sleep.assert_called_with(delay_time)
@@ -350,10 +345,7 @@ def test_reruns_with_delay_marker(testdir, delay_time):
     result = testdir.runpytest()
 
     if delay_time < 0:
-        result.stdout.fnmatch_lines(
-            "*UserWarning: Delay time between re-runs cannot be < 0. "
-            "Using default value: 0"
-        )
+        result.stdout.fnmatch_lines("*UserWarning: Delay time between re-runs cannot be < 0. " "Using default value: 0")
         delay_time = 0
 
     time.sleep.assert_called_with(delay_time)
@@ -547,9 +539,7 @@ def test_only_rerun_flag(testdir, only_rerun_texts, should_rerun):
     for only_rerun_text in only_rerun_texts:
         pytest_args.extend(["--only-rerun", only_rerun_text])
     result = testdir.runpytest(*pytest_args)
-    assert_outcomes(
-        result, passed=num_passed, failed=num_failed, rerun=num_reruns_actual
-    )
+    assert_outcomes(result, passed=num_passed, failed=num_failed, rerun=num_reruns_actual)
 
 
 def test_no_rerun_on_strict_xfail_with_only_rerun_flag(testdir):
@@ -590,9 +580,7 @@ def test_rerun_except_flag(testdir, rerun_except_texts, should_rerun):
         print(rerun_except_text)
         pytest_args.extend(["--rerun-except", rerun_except_text])
     result = testdir.runpytest(*pytest_args)
-    assert_outcomes(
-        result, passed=num_passed, failed=num_failed, rerun=num_reruns_actual
-    )
+    assert_outcomes(result, passed=num_passed, failed=num_failed, rerun=num_reruns_actual)
 
 
 @pytest.mark.parametrize(
