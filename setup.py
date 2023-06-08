@@ -7,6 +7,14 @@ test_deps = [
     "pytest-forked>=1.0.1",
 ]
 
+
+def datarobot_version_scheme():
+    def _datarobot_scheme(version):
+        return '+dr'
+
+    return {'version_scheme': 'python-simplified-semver', 'local_scheme': _datarobot_scheme}
+
+
 setup(
     name="pytest-rerunfailures",
     description="pytest plugin to re-run tests with fixture invalidation to eliminate flaky failures",
@@ -39,5 +47,5 @@ setup(
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
-    use_scm_version=dict(version_scheme="python-simplified-semver", local_scheme="no-local-version"),
+    use_scm_version=datarobot_version_scheme,
 )
