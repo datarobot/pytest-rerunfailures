@@ -2,7 +2,7 @@ Changelog
 ---------
 
 4.1.dr10 (2021-05-21)
-====================
+=====================
 - [TEST-810] Corrected bug in xdist plugin finder (works with PyCharm now!)
 
 4.1.dr9 (2021-05-21)
@@ -19,24 +19,24 @@ Changelog
 - [DIRE-3315] junit report fix
 
 4.1.dr5 (2018-08-07)
-================
+====================
 - Pytest-xdist support added 
 - Added --max-tests-rerun param to do not perform reruns after some threshold
 - Added reruns time spends reporting
 
 
 4.1.dr4 (2018-06-13)
-================
+====================
 - Added possibility to persist rerun stats to json file
 
 
 4.1.dr3 (2018-05-14)
-================
-- Softer mock version dependecy 
+====================
+- Softer mock version dependency
 
 
 4.1.dr2 (2018-05-14)
-================
+====================
 Moved rerun execution on testrun end:
 
 - Plugin state introduced. All failures collected during testrun.
@@ -46,7 +46,7 @@ Moved rerun execution on testrun end:
 - Fixtures would be invalidated once before reruns occurs
 
 4.1.dr1 (2018-03-29)
-================
+====================
 Forked based on pytest-rerunfailures v4.0 package:
 Changes:
 

@@ -108,17 +108,18 @@ Stats file fill consist next fields::
   rerun_tests - List of each test rerun
     nodeid - pytest test nodeid
     status - test status after rerun: flake or failed
-    rerun_trace - Test relevant tarces for teardown, setup and test call
-    original_trace - Original test failure tarce appreared during main run 
+    rerun_trace - Test relevant traces for teardown, setup and test call
+    original_trace - Original test failure trace appeared during main run
 
 Skip reruns execution
 ---------------------
-In case if it is not needed to perform reruns if many tests failed next param could be used:
-  ``--max-tests-rerun {threshold}``
+In case if it is not needed to perform reruns if many tests failed next param could be used: ``--max-tests-rerun {threshold}``
+
 So if during testrun will occur more failed test then threshold value no reruns would be performed.
 
 Compatibility
 -------------
+
 
 * This plugin is *not* compatible with pytest-xdist's --looponfail flag.
 * This plugin is *not* compatible with the core --pdb flag.
