@@ -2,7 +2,7 @@ from setuptools import setup
 
 test_deps = [
     "xmltodict==0.11.0",
-    "pytest<8",
+    "pytest>6,<8",
     "pytest-xdist>=1.23.2",
     "pytest-forked>=1.0.1",
 ]
@@ -34,9 +34,8 @@ setup(
         "Topic :: Software Development :: Testing",
         "Topic :: Utilities",
         "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
