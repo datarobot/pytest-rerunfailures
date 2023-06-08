@@ -1,3 +1,5 @@
+import os
+
 from setuptools import setup
 
 test_deps = [
@@ -7,12 +9,9 @@ test_deps = [
     "pytest-forked>=1.0.1",
 ]
 
-
-def datarobot_version_scheme():
-    def _datarobot_scheme(version):
-        return '+dr'
-
-    return {'version_scheme': 'python-simplified-semver', 'local_scheme': _datarobot_scheme}
+CURRENT_SCM_PRETEND_VERSION = os.environ.get("SETUPTOOLS_SCM_PRETEND_VERSION")
+if CURRENT_SCM_PRETEND_VERSION is not None:
+    os.environ["SETUPTOOLS_SCM_PRETEND_VERSION"] = f"{CURRENT_SCM_PRETEND_VERSION}+dr"
 
 
 setup(
@@ -47,5 +46,5 @@ setup(
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
-    use_scm_version=datarobot_version_scheme,
+    use_scm_version=dict(version_scheme="python-simplified-semver", local_scheme="no-local-version"),
 )
